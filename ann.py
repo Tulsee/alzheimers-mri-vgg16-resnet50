@@ -35,6 +35,7 @@ LEARNING_RATE = 0.001
 EPOCHS = 5
 FINE_TUNE_EPOCHS = 5
 IMG_SIZE = 224
+SEED = 42  # fixes the train/val split
 DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "data", "AugmentedAlzheimerDataset"))
 
 
@@ -89,10 +90,10 @@ full_dataset = datasets.ImageFolder(root=DATA_DIR, transform=transform, loader=s
 # In[30]:
 
 
-# Split Dataset (80/20)
+# Split Dataset (80/20), seeded so every run gets the same split
 train_size = int(0.8 * len(full_dataset))
 val_size = len(full_dataset) - train_size
-train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size], generator=torch.Generator().manual_seed(SEED))
 
 # DataLoaders
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, 
@@ -393,7 +394,7 @@ if torch.cuda.device_count() > 1:
 resnet_model = resnet_model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-resnet_optimizer = optim.Adam(resnet_model.parameters(), lr=LEARNIN+G_RATE)
+resnet_optimizer = optim.Adam(resnet_model.parameters(), lr=LEARNING_RATE)
 
 # Train ResNet50 (Feature Extraction)
 resnet_history = train_model(resnet_model, train_loader, val_loader,
